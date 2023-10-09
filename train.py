@@ -41,11 +41,11 @@ parser.add_argument("--num_workers", default=8, type=int)
 parser.add_argument("--train_db_name", default="cifar_im", type=str, help="cifar_im, iNature_im , imagenet-r_im")
 parser.add_argument("--val_db_name", default="cifar_im", type=str, help="cifar_im, iNature_im , imagenet-r_im")
 parser.add_argument('--imbalance_ratio', default=0.01, type=float, help='imbalance_ratio for dataset(cifar)')
-parser.add_argument("--eval_interval", default=10, type=int, help="eval_interval(epoch)")
 
 parser.add_argument("--num_heads",default=2,type=int)
 parser.add_argument("--num_classes",default=[100],type=int,nargs="+")
 parser.add_argument("--epochs",default=50,type=int)
+parser.add_argument("--train_eval_interval", default=10, type=int, help = "eval interval for trainset")
 parser.add_argument("--backbone", default="dino_vitb16", type=str, help="backbone: dino_vitb16")
 '''SK'''
 parser.add_argument("--sk_type", default="ppot", type=str, help="uot, ppot, pot")
@@ -53,6 +53,7 @@ parser.add_argument("--sk_factor", default=0.1, type=float)
 parser.add_argument("--sk_iter", default=3, type=int)
 parser.add_argument("--sk_iter_limit", default=1000, type=int)
 parser.add_argument("--batch_size", default=512,type=int)
+parser.add_argument("--eval_batch_size", default=1024,type=int)
 
 parser.add_argument("--sk_confusion",default=False,action="store_true",help="save sk confusion matrix")
 parser.add_argument("--sk_w",default=1.0,type=float)
@@ -75,6 +76,12 @@ parser.add_argument("--weight_decay",default=0.0,type=float)
 # scheduler
 parser.add_argument("--scheduler", default="cosine", type=str)
 parser.add_argument("--lr_decay_rate", default=0.1, type=float)
+
+def eval(config,dataloader, model, head_select, confusion=False,class_names = None, confusion_file = None):
+    predictions = get_predictions(config, dataloader, model)
+    clustering_stats = hungarian_evaluate(head_select, predictions,class_names=class_names,num_classes=config["num_classes"][0],
+                                          compute_confusion_matrix=confusion, confusion_matrix_file=confusion_file)
+    return clustering_stats
 
 def main():
     args = parser.parse_args()
@@ -247,20 +254,14 @@ def main():
             raise NotImplementedError
 
         # Evaluate
-        if epoch % args.eval_interval == 0:
-            print('Make prediction ...')
-            predictions_test = get_predictions(p, val_dataloader, model)
-            predictions_train = get_predictions(p, train_dataloader_for_eval, model)
-            if len(args.num_classes)>1:
-                predictions_test=[predictions_test[0]]
-                predictions_train=[predictions_train[0]]
+        print('Make prediction ...')
 
-            print('Evaluate with hungarian matching algorithm ...')
-            clustering_stats = hungarian_evaluate(lowest_loss_head, predictions_train, num_classes=p["num_classes"][0],class_names=trainset_class,compute_confusion_matrix=False,confusion_matrix_file=os.path.join(p['cluster_dir'], 'train_confusion_matrix.png'))
+        if epoch % args.train_eval_interval == 0:
+            clustering_stats = eval(p,train_dataloader_for_eval, model, lowest_loss_head, confusion=False)
             print(f"trainset result: {clustering_stats}")
 
-            clustering_stats = hungarian_evaluate(lowest_loss_head, predictions_test, num_classes=p["num_classes"][0], class_names=valset_class, compute_confusion_matrix=False, confusion_matrix_file=os.path.join(p['cluster_dir'], 'test_confusion_matrix.png'))
-            print(f"testset result: {clustering_stats}")
+        clustering_stats = eval(p,val_dataloader, model, lowest_loss_head, confusion=False)
+        print(f"testset result: {clustering_stats}")
 
         # Checkpoint
         print('Checkpoint ...')
@@ -279,19 +280,11 @@ def main():
         model.load_state_dict(checkpoint['model'], strict=False)
         model_checkpoint_head = checkpoint['best_loss_head']
 
-    predictions_train = get_predictions(p, train_dataloader_for_eval, model)
-    clustering_stats = hungarian_evaluate(model_checkpoint_head, predictions_train, num_classes=p["num_classes"][0],
-                                          class_names=trainset_class,
-                                          compute_confusion_matrix=True,
-                                          confusion_matrix_file=os.path.join(p['cluster_dir'], 'train_confusion_matrix.png'))
+    clustering_stats = eval(p, train_dataloader_for_eval, model, model_checkpoint_head, confusion=True,class_names=trainset_class,confusion_file=os.path.join(p['cluster_dir'], 'train_confusion_matrix.png'))
     print(f"trainset result: {clustering_stats}")
 
     if args.model_select == "loss":
-        predictions_test = get_predictions(p, val_dataloader, model)
-        clustering_stats = hungarian_evaluate(model_checkpoint_head, predictions_test, num_classes=p["num_classes"][0],
-                                              class_names=valset_class,
-                                              compute_confusion_matrix=True,
-                                              confusion_matrix_file=os.path.join(p['cluster_dir'], 'test_confusion_matrix_loss.png'))
+        clustering_stats = eval(p, val_dataloader, model, model_checkpoint_head, confusion=True,class_names=valset_class,confusion_file=os.path.join(p['cluster_dir'], 'test_confusion_matrix.png'))
         print(f"testset result: {clustering_stats}")
     else:
         # save the last model

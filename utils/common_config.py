@@ -94,7 +94,7 @@ def get_train_dataloader(p, dataset):
 
 def get_val_dataloader(p, dataset):
     return torch.utils.data.DataLoader(dataset, num_workers=p['num_workers'],
-            batch_size=p['batch_size'], pin_memory=True, collate_fn=collate_custom,
+            batch_size=p['eval_batch_size'], pin_memory=True, collate_fn=collate_custom,
             drop_last=False, shuffle=False)
 
 
