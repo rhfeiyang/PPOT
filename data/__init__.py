@@ -1,3 +1,7 @@
+"""
+Authors: Hui Ren
+Licensed under the CC BY-NC 4.0 license (https://creativecommons.org/licenses/by-nc/4.0/)
+"""
 import matplotlib.pyplot as plt
 def plot_distribution(distribution,dataset_name,train=True):
     plt.bar(range(len(distribution)), distribution, color = "dodgerblue")

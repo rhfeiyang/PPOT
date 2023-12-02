@@ -1,3 +1,7 @@
+"""
+Authors: Hui Ren
+Licensed under the CC BY-NC 4.0 license (https://creativecommons.org/licenses/by-nc/4.0/)
+"""
 import torch
 class two_view_wrapper(torch.utils.data.Dataset):
     def __init__(self, dataset):

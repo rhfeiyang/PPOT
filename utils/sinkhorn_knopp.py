@@ -1,3 +1,7 @@
+"""
+Authors: Hui Ren
+Licensed under the CC BY-NC 4.0 license (https://creativecommons.org/licenses/by-nc/4.0/)
+"""
 import torch
 import torch.nn.functional as F
 import torch.nn as nn

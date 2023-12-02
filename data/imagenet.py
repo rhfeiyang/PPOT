@@ -1,3 +1,7 @@
+"""
+Authors: Hui Ren
+Licensed under the CC BY-NC 4.0 license (https://creativecommons.org/licenses/by-nc/4.0/)
+"""
 # 1. Generate data split
 # 2. Supervised Pretrain dataloader
 # 3. Discovery dataloader

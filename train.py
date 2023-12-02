@@ -1,5 +1,5 @@
 """
-Authors: Wouter Van Gansbeke, Simon Vandenhende
+Authors: Hui Ren
 Licensed under the CC BY-NC 4.0 license (https://creativecommons.org/licenses/by-nc/4.0/)
 """
 import argparse
@@ -128,15 +128,20 @@ def main():
     optimizer = get_optimizer(p, model)
     print(optimizer)
 
+    criterion_sk = SK_loss(p,sk_type=p["sk_type"],factor=p["sk_factor"],num_iter=p["sk_iter"],total_iter=len(train_dataloader) * p['epochs'], start_iter=0)
+    print(criterion_sk)
+
     # Checkpoint
     if args.continue_train and os.path.exists(p['cluster_checkpoint']):
         print(colored('Restart from checkpoint {}'.format(p['cluster_checkpoint']), 'blue'))
-        checkpoint = torch.load(p['cluster_checkpoint'], map_location='cpu')
+        checkpoint = torch.load(p['cluster_checkpoint'])
         model.load_state_dict(checkpoint['model'], strict=False)
         optimizer.load_state_dict(checkpoint['optimizer'])
         start_epoch = checkpoint['epoch']
         best_loss = checkpoint['best_loss']
         best_loss_head = checkpoint['best_loss_head']
+        criterion_sk.i = start_epoch*len(train_dataloader)
+        criterion_sk.logits_bank = checkpoint['logits_bank']
 
     else:
         print(colored('New train or No checkpoint file at {}'.format(p['cluster_checkpoint']), 'blue'))
@@ -150,9 +155,7 @@ def main():
     p["log_upper_bounds"] = torch.log(torch.ones(p['num_classes'][0])/p['num_classes'][0])
     p["device"] = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    criterion_sk = SK_loss(p,sk_type=p["sk_type"],factor=p["sk_factor"],num_iter=p["sk_iter"],total_iter=len(train_dataloader) * p['epochs'], start_iter=start_epoch*len(train_dataloader))
 
-    print(criterion_sk)
 
     # Main loop
     print(colored('Starting main loop', 'blue'))
@@ -266,7 +269,7 @@ def main():
         # Checkpoint
         print('Checkpoint ...')
         torch.save({'optimizer': optimizer.state_dict(), 'model': get_parameter_with_grad(model),
-                    'epoch': epoch + 1, 'best_loss': best_loss, 'best_loss_head': best_loss_head},
+                    'epoch': epoch + 1, 'best_loss': best_loss, 'best_loss_head': best_loss_head, 'logits_bank': criterion_sk.logits_bank},
                      p['cluster_checkpoint'])
 
     # Evaluate and save the final model
