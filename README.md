@@ -1,5 +1,9 @@
-# PPOT: Progressive Partial Optimal Transport for Deep Imbalanced Clustering
+# P<sup>2</sup>OT: Progressive Partial Optimal Transport for Deep Imbalanced Clustering
+By [Chuyu Zhang*](https://scholar.google.com/citations?user=V7IktkcAAAAJ), [Hui Ren*](https://rhfeiyang.github.io), and [Xuming He](https://faculty.sist.shanghaitech.edu.cn/faculty/hexm/index.html) (* indicates equal contribution)
 
+This repo contains the Pytorch implementation of our [paper](https://arxiv.org/abs/2401.09266). (Accepted by ICLR 2024)
+
+![pseudo code](/img/pseudo_code.jpg)
 
 ## Installation
 ```shell
@@ -51,3 +55,16 @@ python eval.py --train_db_name iNature_im --val_db_name iNature_im --num_classes
 ## License
 
 This software is released under a creative commons license which allows for personal and research use only. For a commercial license please contact the authors. You can view a license summary [here](http://creativecommons.org/licenses/by-nc/4.0/).
+
+## Citation
+
+```shell
+@misc{zhang2024p2ot,
+      title={P$^2$OT: Progressive Partial Optimal Transport for Deep Imbalanced Clustering}, 
+      author={Chuyu Zhang and Hui Ren and Xuming He},
+      year={2024},
+      eprint={2401.09266},
+      archivePrefix={arXiv},
+      primaryClass={cs.CV}
+}
+```
