@@ -3,7 +3,6 @@ By [Chuyu Zhang*](https://scholar.google.com/citations?user=V7IktkcAAAAJ), [Hui 
 
 This repo contains the Pytorch implementation of our [paper](https://arxiv.org/abs/2401.09266). (Accepted by ICLR 2024)
 
-![pseudo code](/img/pseudo_code.jpg)
 
 ## Installation
 ```shell
