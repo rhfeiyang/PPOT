@@ -58,9 +58,10 @@ This software is released under a creative commons license which allows for pers
 ## Citation
 
 ```shell
-@misc{zhang2024p2ot,
+@inproceedings{zhang2024p2ot,
       title={P$^2$OT: Progressive Partial Optimal Transport for Deep Imbalanced Clustering}, 
       author={Chuyu Zhang and Hui Ren and Xuming He},
+      booktitle={The Twelfth International Conference on Learning Representations},
       year={2024},
       eprint={2401.09266},
       archivePrefix={arXiv},
